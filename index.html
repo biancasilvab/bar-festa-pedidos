@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bar da Festa - Sistema de Pedidos</title>
+  
+  <!-- Estilos CSS para simular o design (sem Tailwind, usando CSS puro) -->
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to bottom right, #f3e8ff, #e0e7ff);
+      color: #374151;
+    }
+    .min-h-screen { min-height: 100vh; padding: 1.5rem; }
+    .max-w-4xl { max-width: 64rem; margin: 0 auto; }
+    .text-center { text-align: center; }
+    .mb-8 { margin-bottom: 2rem; }
+    .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+    .font-bold { font-weight: 700; }
+    .text-purple-800 { color: #581c87; }
+    .text-purple-600 { color: #9333ea; }
+    .bg-white { background-color: #ffffff; }
+    .rounded-lg { border-radius: 0.5rem; }
+    .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+    .p-6 { padding: 1.5rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+    .font-semibold { font-weight: 600; }
+    .text-gray-800 { color: #1f2937; }
+    .space-y-4 > * + * { margin-top: 1rem; }
+    .block { display: block; }
+    .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+    .font-medium { font-weight: 500; }
+    .text-gray-700 { color: #374151; }
+    .mb-1 { margin-bottom: 0.25rem; }
+    .w-full { width: 100%; }
+    .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+    .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+    .border { border-width: 1px; border-style: solid; }
+    .border-gray-300 { border-color: #d1d5db; }
+    .rounded-md { border-radius: 0.375rem; }
+    :focus { outline: none; }
+    .focus\:ring-2:focus { box-shadow: 0 0 0 2px rgba(147, 51, 234, 0.5); }
+    .focus\:ring-purple-500:focus { /* já definido acima */ }
+    .text-gray-600 { color: #4b5563; }
+    .ml-2 { margin-left: 0.5rem; }
+    .bg-purple-600 { background-color: #9333ea; }
+    .text-white { color: #ffffff; }
+    .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+    .px-4 { padding-left: 1rem; padding-right: 1rem; }
+    .hover\:bg-purple-700:hover { background-color: #7c3aed; }
+    .transition-colors { transition-property: background-color; transition-duration: 0.15s; }
+    .mb-6 { margin-bottom: 1.5rem; }
+    .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+    .text-orange-600 { color: #ea580c; }
+    .mb-3 { margin-bottom: 0.75rem; }
+    .text-gray-500 { color: #6b7280; }
+    .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+    .space-y-3 > * + * { margin-top: 0.75rem; }
+    .flex { display: flex; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .p-3 { padding: 0.75rem; }
+    .bg-orange-50 { background-color: #fff7ed; }
+    .border-orange-200 { border-color: #fed7aa; }
+    .font-medium { font-weight: 500; }
+    .bg-green-500 { background-color: #10b981; }
+    .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+    .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+    .hover\:bg-green-600:hover { background-color: #059669; }
+    .text-green-600 { color: #059669; }
+    .bg-green-50 { background-color: #f0fdf4; }
+    .border-green-200 { border-color: #bbf7d0; }
+    .bg-red-500 { background-color: #ef4444; }
+    .hover\:bg-red-600:hover { background-color: #dc2626; }
+    .bg-blue-500 { background-color: #3b82f6; }
+    .hover\:bg-blue-600:hover { background-color: #2563eb; }
+    .text-blue-600 { color: #2563eb; }
+    .mb-2 { margin-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+  <!-- Contêiner para o app React -->
+  <div id="root"></div>
+
+  <!-- Scripts do React e ReactDOM (versões de desenvolvimento) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+  <!-- Babel para transformar JSX no navegador -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Seu código React (com JSX) -->
+  <script type="text/babel">
+    const { useState, useCallback } = React;
+
+    function DrinkOrderSystem() {
+      const [customerName, setCustomerName] = useState('');
+      const [selectedDrink, setSelectedDrink] = useState('morango');
+      const [orders, setOrders] = useState([]);
+      const [orderIdCounter, setOrderIdCounter] = useState(1);
+      const [isBartender, setIsBartender] = useState(false);
+
+      const drinkOptions = [
+        { value: 'morango', label: 'Morango' },
+        { value: 'uva', label: 'Uva com Hortelã' },
+        { value: 'limao', label: 'Limão' },
+        { value: 'abacaxi', label: 'Abacaxi com Hortelã' },
+      ];
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!customerName.trim()) return;
+
+        const newOrder = {
+          id: orderIdCounter,
+          name: customerName,
+          drink: selectedDrink,
+          completed: false,
+        };
+
+        setOrders(prevOrders => [...prevOrders, newOrder]);
+        setOrderIdCounter(prevCounter => prevCounter + 1);
+        setCustomerName('');
+        setSelectedDrink('morango');
+      };
+
+      const getDrinkLabel = (drinkValue) => {
+        const option = drinkOptions.find(d => d.value === drinkValue);
+        return option ? option.label : 'Drink Desconhecido';
+      };
+
+      // Memoizar as funções para evitar recriação em cada render
+      const completeOrder = useCallback((id) => {
+        setOrders(prevOrders => 
+          prevOrders.map(order => 
+            order.id === id ? { ...order, completed: true } : order
+          )
+        );
+      }, []);
+
+      const deleteOrder = useCallback((id) => {
+        setOrders(prevOrders => prevOrders.filter(order => order.id !== id));
+      }, []);
+
+      const handleBartenderLogin = () => {
+        const password = prompt('Digite a senha do barman:');
+        if (password === 'barman123') {
+          setIsBartender(true);
+        } else {
+          alert('Senha incorreta!');
+        }
+      };
+
+      const handleLogout = () => {
+        setIsBartender(false);
+      };
+
+      const pendingOrders = orders.filter(order => !order.completed);
+      const completedOrders = orders.filter(order => order.completed);
+
+      return (
+        <div className="min-h-screen">
+          <div className="max-w-4xl">
+            {/* Header */}
+            <header className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-purple-800">Bar da Festa</h1>
+              <p className="text-purple-600">Faça seu pedido de drinks!</p>
+              {!isBartender && (
+                <button
+                  onClick={handleBartenderLogin}
+                  className="mt-4 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors"
+                  type="button"
+                >
+                  Entrar como Barman
+                </button>
+              )}
+              {isBartender && (
+                <button
+                  onClick={handleLogout}
+                  className="mt-4 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition-colors"
+                  type="button"
+                >
+                  Sair do Modo Barman
+                </button>
+              )}
+            </header>
+
+            {/* Order Form */}
+            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">Fazer Pedido</h2>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                    Seu Nome
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="Digite seu nome"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="drink" className="block text-sm font-medium text-gray-700 mb-1">
+                    Escolha seu Drink
+                  </label>
+                  <select
+                    id="drink"
+                    value={selectedDrink}
+                    onChange={(e) => setSelectedDrink(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    {drinkOptions.map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors"
+                >
+                  Fazer Pedido
+                </button>
+              </form>
+            </div>
+
+            {/* Orders View */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">Pedidos</h2>
+              
+              {/* Pending Orders */}
+              <div className="mb-6">
+                <h3 className="text-lg font-medium text-orange-600 mb-3">Pedidos Pendentes</h3>
+                {pendingOrders.length === 0 ? (
+                  <p className="text-gray-500 text-center py-4">Nenhum pedido pendente</p>
+                ) : (
+                  <div className="space-y-3">
+                    {pendingOrders.map(order => (
+                      <div key={order.id} className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200">
+                        <div>
+                          <span className="font-medium text-gray-800">{order.name}</span>
+                          <span className="text-gray-600 ml-2"> - {getDrinkLabel(order.drink)}</span>
+                        </div>
+                        {isBartender && (
+                          <button
+                            onClick={() => completeOrder(order.id)}
+                            className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 transition-colors"
+                            type="button"
+                          >
+                            Concluir
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Completed Orders */}
+              <div>
+                <h3 className="text-lg font-medium text-green-600 mb-3">Pedidos Concluídos</h3>
+                {completedOrders.length === 0 ? (
+                  <p className="text-gray-500 text-center py-4">Nenhum pedido concluído</p>
+                ) : (
+                  <div className="space-y-3">
+                    {completedOrders.map(order => (
+                      <div key={order.id} className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                        <div>
+                          <span className="font-medium text-gray-800">{order.name}</span>
+                          <span className="text-gray-600 ml-2"> - {getDrinkLabel(order.drink)}</span>
+                        </div>
+                        {isBartender && (
+                          <button
+                            onClick={() => deleteOrder(order.id)}
+                            className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
+                            type="button"
+                          >
+                            Remover
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Renderizar o componente
+    const container = document.getElementById('root');
+    const root = ReactDOM.createRoot(container);
+    root.render(<DrinkOrderSystem />);
+  </script>
+</body>
+</html>
